@@ -57,7 +57,7 @@ uint32_t p1;
 time_t time;
 };
 
-struct mesh_secred_part{
+struct mesh_secret_part{
   struct header header;
   uint8_t data[240];
 };
@@ -83,19 +83,19 @@ struct mesh_unencrypted_part{
   }
 };
 typedef struct mesh_unencrypted_part unencrypted_t;
-#define SECRED_PART_OFFSET sizeof(unencrypted_t)
+#define SECRET_PART_OFFSET sizeof(unencrypted_t)
 
 
 struct meshFrame{
   unencrypted_t unencrypted;
-  struct mesh_secred_part encrypted;
+  struct mesh_secret_part encrypted;
 };
 #pragma pack(pop);
 int espNowFloodingMesh_getTTL() {
     return syncTTL;
 }
 const unsigned char broadcast_mac[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-uint8_t aes_secredKey[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE, 0xFF};
+uint8_t aes_secretKey[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE, 0xFF};
 bool forwardMsg(const uint8_t *data, int len);
 uint32_t sendMsg(uint8_t* msg, int size, int ttl, int msgId, void *ptr=NULL);
 void hexDump(const uint8_t*b,int len);
@@ -328,7 +328,7 @@ uint16_t calculateCRC(struct meshFrame *m){
   //uint16_t crc = m->encrypted.header.crc16;
   //m->encrypted.header.crc16 = 0;
   int size = m->encrypted.header.length + sizeof(m->encrypted.header);
-  uint16_t ret = calculateCRC(0, (const unsigned char*)m + SECRED_PART_OFFSET,size);
+  uint16_t ret = calculateCRC(0, (const unsigned char*)m + SECRET_PART_OFFSET,size);
   //m->encrypted.header.crc16 = crc;
   return ret;
 }
@@ -605,8 +605,8 @@ void espNowFloodingMesh_begin(int channel, char bsId[6]) {
   myBsid = bsid;
 }
 
-void espNowFloodingMesh_secredkey(const unsigned char key[16]){
-  memcpy(aes_secredKey, key, sizeof(aes_secredKey));
+void espNowFloodingMesh_secretKey(const unsigned char key[16]){
+  memcpy(aes_secretKey, key, sizeof(aes_secretKey));
 }
 
 int decrypt(const uint8_t *_from, struct meshFrame *m, int size) {
@@ -615,8 +615,8 @@ int decrypt(const uint8_t *_from, struct meshFrame *m, int size) {
 
   uint8_t to[2*16];
   for(int i=0;i<size;i=i+16) {
-      const uint8_t *from = _from + i + SECRED_PART_OFFSET;
-      uint8_t *key = aes_secredKey;
+      const uint8_t *from = _from + i + SECRET_PART_OFFSET;
+      uint8_t *key = aes_secretKey;
 
       #ifdef DISABLE_CRYPTING
         memcpy(to,from,16);
@@ -638,8 +638,8 @@ int decrypt(const uint8_t *_from, struct meshFrame *m, int size) {
         #endif
       #endif
 
-      if((i+SECRED_PART_OFFSET+16)<=sizeof(m->encrypted)) {
-        memcpy((uint8_t*)m+i+SECRED_PART_OFFSET, to, 16);
+      if((i+SECRET_PART_OFFSET+16)<=sizeof(m->encrypted)) {
+        memcpy((uint8_t*)m+i+SECRET_PART_OFFSET, to, 16);
       }
   }
 }
@@ -652,8 +652,8 @@ int encrypt(struct meshFrame *m) {
   uint8_t to[2*16];
 
   for(int i=0;i<size;i=i+16) {
-      uint8_t *from = (uint8_t *)m+i+SECRED_PART_OFFSET;
-      uint8_t *key = aes_secredKey;
+      uint8_t *from = (uint8_t *)m+i+SECRET_PART_OFFSET;
+      uint8_t *key = aes_secretKey;
      #ifdef DISABLE_CRYPTING
        memcpy((void*)to,(void*)from,16);
      #else
@@ -672,7 +672,7 @@ int encrypt(struct meshFrame *m) {
           break;
         #endif
       #endif
-      memcpy((uint8_t*)m+i+SECRED_PART_OFFSET, to, 16);
+      memcpy((uint8_t*)m+i+SECRET_PART_OFFSET, to, 16);
   }
 /*
   for(int i=m->encrypted.header.length + sizeof(m->encrypted.header)+1;i<size;i++) {
@@ -683,7 +683,7 @@ int encrypt(struct meshFrame *m) {
     #endif
   }*/
 
-  return size + SECRED_PART_OFFSET;
+  return size + SECRET_PART_OFFSET;
 }
 
 bool forwardMsg(const uint8_t *data, int len) {
@@ -710,7 +710,7 @@ bool forwardMsg(const uint8_t *data, int len) {
 
 uint32_t sendMsg(uint8_t* msg, int size, int ttl, int msgId, void *ptr) {
   uint32_t ret=0;
-  if(size>=sizeof(struct mesh_secred_part)) {
+  if(size>=sizeof(struct mesh_secret_part)) {
     #ifdef DEBUG_PRINTS
     Serial.println("espNowFloodingMesh_send: Invalid size");
     #endif

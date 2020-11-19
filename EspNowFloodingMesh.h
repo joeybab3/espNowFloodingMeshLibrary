@@ -30,7 +30,7 @@
 
     void espNowFloodingMesh_RecvCB(void (*callback)(const uint8_t *, int, uint32_t));
     void espNowFloodingMesh_send(uint8_t* msg, int size, int ttl=0); //Max message length is 236byte
-    void espNowFloodingMesh_secredkey(const unsigned char key[16]);
+    void espNowFloodingMesh_secretKey(const unsigned char key[16]);
     void espNowFloodingMesh_setAesInitializationVector(const unsigned char iv[16]);
 
     void espNowFloodingMesh_ErrorDebugCB(void (*callback)(int,const char *));
