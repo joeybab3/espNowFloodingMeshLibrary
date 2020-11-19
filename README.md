@@ -10,15 +10,15 @@ Features:
 - Master node sends time sync message every 10s to all nodes. (this synchronizes the clocks of the nodes)
 - a message cache. If a received packet is already found in the cache --> it will not be retransmitted or handled again
 - Every message has a time stamp. If the time stamp is too old (or from the future), the message will be rejected.
-- All messages are crypted (AES128)
+- All messages are encrypted (AES128)
 - Flooding mesh support
-- TTL support (time to life)
-- ESP32, ESP2866, ESP01
+- TTL support (time to live)
+- ESP32, ESP8266, ESP01
 - Battery node support (Battery nodes do not relay messages)
 - Request&Reply support
 - Each Nodes can communicate with each other
 - Ping about 40-60ms
-- Nearly instant connection after poweron
+- Nearly instant connection after power-on
 - Retransmission support
 - Request/Reply support
 - Send and pray support (Send a message to all nodes without reply/ack)
@@ -89,15 +89,14 @@ SlaveNode-------SlaveNode-------------SlaveNode-------SlaveNode-------------Slav
 | ---------------------------------------------------------------------------------------- |
 |                   1 byte              3 bytes                  7~255 bytes               |
 +------------------------------------------------------------------------------------------+
-```                                                                                        ´
-
+```
 ## Create master node:
 ```c++
 #include <EspNowFloodingMesh.h>
 
 #define ESP_NOW_CHANNEL 1
 //AES 128bit
-unsigned char secredKey[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE, 0xFF};
+unsigned char secretKey[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE, 0xFF};
 
 void espNowFloodingMeshRecv(const uint8_t *data, int len){
   if(len>0) {
@@ -109,7 +108,7 @@ void setup() {
   Serial.begin(115200);
 
   espNowFloodingMesh_RecvCB(espNowFloodingMeshRecv);
-  espNowFloodingMesh_secredkey(secredKey);
+  espNowFloodingMesh_secredkey(secretKey);
   espNowFloodingMesh_begin(ESP_NOW_CHANNEL);
   espNowFloodingMesh_setToMasterRole(true,3); //Set ttl to 3. TIME_SYNC message use this ttl
   espNowFloodingMesh_ErrorDebugCB([](int level, const char *str) {
@@ -134,7 +133,7 @@ void loop() {
 
 #define ESP_NOW_CHANNEL 1
 //AES 128bit
-unsigned char secredKey[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF};
+unsigned char secretKey[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE,0xFF};
 
 void espNowFloodingMeshRecv(const uint8_t *data, int len){
   if(len>0) {
@@ -147,7 +146,7 @@ void setup() {
 
   espNowFloodingMesh_RecvCB(espNowFloodingMeshRecv);
   espNowFloodingMesh_begin(ESP_NOW_CHANNEL);
-  espNowFloodingMesh_secredkey(secredKey);
+  espNowFloodingMesh_secredkey(secretKey);
 
   //Ask instant sync from master.
   espNowFloodingMesh_requestInstantTimeSyncFromMaster();
@@ -175,7 +174,7 @@ void loop() {
 #include <time.h>
 #define ESP_NOW_CHANNEL 1
 //AES 128bit
-unsigned char secredKey[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+unsigned char secretKey[] = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
 
 void espNowFloodingMeshRecv(const uint8_t *data, int len) {
   if (len > 0) {
@@ -188,7 +187,7 @@ void setup() {
   //Set device in AP mode to begin with
   espNowFloodingMesh_RecvCB(espNowFloodingMeshRecv);
   espNowFloodingMesh_begin(ESP_NOW_CHANNEL);
-  espNowFloodingMesh_secredkey(secredKey);
+  espNowFloodingMesh_secredkey(secretKey);
   espNowFloodingMesh_setToBatteryNode();
 }
 
@@ -212,7 +211,7 @@ Send "MARCO" to other nodes
 
 #define ESP_NOW_CHANNEL 1
 //AES 128bit
-unsigned char secredKey[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE, 0xFF};
+unsigned char secretKey[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE, 0xFF};
 
 void espNowFloodingMeshRecv(const uint8_t *data, int len, uint32_t replyPrt){
 }
@@ -221,7 +220,7 @@ void setup() {
   Serial.begin(115200);
   //Set device in AP mode to begin with
   espNowFloodingMesh_RecvCB(espNowFloodingMeshRecv);
-  espNowFloodingMesh_secredkey(secredKey);
+  espNowFloodingMesh_secredkey(secretKey);
   espNowFloodingMesh_begin(ESP_NOW_CHANNEL);
   espNowFloodingMesh_setToMasterRole(true,3); //Set ttl to 3.
   espNowFloodingMesh_ErrorDebugCB([](int level, const char *str) {
@@ -251,7 +250,7 @@ Answer to "MARCO" and send "POLO"
 
 #define ESP_NOW_CHANNEL 1
 //AES 128bit
-unsigned char secredKey[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE, 0xFF};
+unsigned char secretKey[] = {0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77,0x88,0x99,0xAA,0xBB,0xCC,0xDD,0xEE, 0xFF};
 
 void espNowFloodingMeshRecv(const uint8_t *data, int len, uint32_t replyPrt){
   if(len>0) {
@@ -269,7 +268,7 @@ void setup() {
   Serial.begin(115200);
   //Set device in AP mode to begin with
   espNowFloodingMesh_RecvCB(espNowFloodingMeshRecv);
-  espNowFloodingMesh_secredkey(secredKey);
+  espNowFloodingMesh_secredkey(secretKey);
   espNowFloodingMesh_begin(ESP_NOW_CHANNEL);
 
   espNowFloodingMesh_requestInstantTimeSyncFromMaster();
